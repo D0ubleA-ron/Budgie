@@ -1,14 +1,19 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
-require('dotenv').config();
+const dotenv = require('dotenv');
+const plaidRoutes = require('./routes/plaidRoutes');
 
+dotenv.config();
+
+const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
   res.send('Backend is running 🎉');
 });
+
+app.use('/api/plaid', plaidRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
