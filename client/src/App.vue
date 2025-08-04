@@ -2,6 +2,8 @@
 import HelloWorld from './components/HelloWorld.vue'
 import PlaidLink from './components/PlaidLink.vue'
 import RegisterForm from './components/RegisterForm.vue';
+import Login from './components/Login.vue';
+
 </script>
 
 <template>
@@ -16,6 +18,7 @@ import RegisterForm from './components/RegisterForm.vue';
   <HelloWorld msg="Vite + Vue" />
   <PlaidLink />
   <RegisterForm/>
+  <Login/>
 </template>
 
 <style scoped>

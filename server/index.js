@@ -2,14 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const plaidRoutes = require('./routes/plaidRoutes');
-const authRoutes = require('./routes/auth');
-dotenv.config();
-
+const authRoutes = require('./routes/authRoutes');
+const cookieParser = require('cookie-parser');
 const app = express();
-app.use(cors());
+
+dotenv.config();
+app.use(cors({
+  origin: 'http://localhost:5173', 
+  credentials: true               
+}));
 app.use(express.json());
+app.use(cookieParser());
 app.use('/api/plaid', plaidRoutes);
 app.use('/api/auth', authRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('Backend is running 🎉');

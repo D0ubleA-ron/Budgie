@@ -29,6 +29,10 @@ export default {
       try {
         const response = await fetch('http://localhost:3000/api/plaid/create-link-token', {
           method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
         const data = await response.json();
         this.linkToken = data.link_token;

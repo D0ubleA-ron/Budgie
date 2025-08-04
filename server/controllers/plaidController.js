@@ -1,30 +1,53 @@
+const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('../generated/prisma');
 const client = require('../services/plaidClient');
 
-let ACCESS_TOKEN = null; // temporary store
+const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const createLinkToken = async (req, res) => {
   try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: 'Missing auth token' });
+    }
+
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (!payload?.userId) {
+      return res.status(400).json({ error: 'Invalid token payload' });
+    }
+
     const response = await client.linkTokenCreate({
-      user: { client_user_id: 'user-123' },
+      user: { client_user_id: payload.userId },
       client_name: 'Budgie',
       products: ['auth', 'transactions'],
       country_codes: ['US', 'CA'],
       language: 'en',
     });
+
     res.json({ link_token: response.data.link_token });
   } catch (error) {
-    console.error('Error creating link token:', error);
+    console.error('Error creating link token:', error?.response?.data || error.message || error);
     res.status(500).json({ error: 'Unable to create link token' });
   }
 };
 
 const exchangePublicToken = async (req, res) => {
   const { public_token } = req.body;
+
   try {
+    const token = req.cookies.token;
+    const payload = jwt.verify(token, JWT_SECRET);
+
     const response = await client.itemPublicTokenExchange({ public_token });
-    ACCESS_TOKEN = response.data.access_token; // 💾 Save in memory
-    const item_id = response.data.item_id;
-    res.json({ access_token: ACCESS_TOKEN, item_id });
+    const access_token = response.data.access_token;
+
+    await prisma.user.update({
+      where: { id: payload.userId },
+      data: { accessToken: access_token },
+    });
+
+    res.json({ item_id: response.data.item_id });
   } catch (error) {
     console.error('Error exchanging public token:', error);
     res.status(500).json({ error: 'Token exchange failed' });
@@ -33,10 +56,18 @@ const exchangePublicToken = async (req, res) => {
 
 const getAccounts = async (req, res) => {
   try {
-    if (!ACCESS_TOKEN) {
-      return res.status(400).json({ error: 'Access token not set yet' });
+    const token = req.cookies.token;
+    const payload = jwt.verify(token, JWT_SECRET);
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+    });
+
+    if (!user || !user.accessToken) {
+      return res.status(400).json({ error: 'No access token linked to user' });
     }
-    const response = await client.authGet({ access_token: ACCESS_TOKEN });
+
+    const response = await client.authGet({ access_token: user.accessToken });
     res.json(response.data.accounts);
   } catch (error) {
     console.error('getAccounts error:', error);
@@ -46,15 +77,24 @@ const getAccounts = async (req, res) => {
 
 const getTransactions = async (req, res) => {
   try {
-    if (!ACCESS_TOKEN) {
-      return res.status(400).json({ error: 'Access token not set yet' });
+    const token = req.cookies.token;
+    const payload = jwt.verify(token, JWT_SECRET);
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+    });
+
+    if (!user || !user.accessToken) {
+      return res.status(400).json({ error: 'No access token linked to user' });
     }
+
     const response = await client.transactionsGet({
-      access_token: ACCESS_TOKEN,
+      access_token: user.accessToken,
       start_date: '2024-01-01',
       end_date: '2024-12-31',
       options: { count: 10, offset: 0 },
     });
+
     res.json(response.data.transactions);
   } catch (error) {
     console.error('getTransactions error:', error);
