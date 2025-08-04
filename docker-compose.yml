@@ -23,6 +23,7 @@ services:
       - db
     ports:
       - "3000:3000"
+      - "5555:5555"
 
   frontend:
     build: ./client
@@ -30,8 +31,6 @@ services:
     depends_on:
       - backend
     ports:
-      - "5173:80"  # Vite defaults to 5173, but Nginx serves on 80
-    # nginx will serve from dist/ so no need for volumes
-
+      - "5173:80"  
 volumes:
   db-data:
