@@ -3,6 +3,8 @@ import HelloWorld from './components/HelloWorld.vue'
 import PlaidLink from './components/PlaidLink.vue'
 import RegisterForm from './components/RegisterForm.vue';
 import Login from './components/Login.vue';
+import Logout from './components/Logout.vue';
+import AccountInfo from './components/AccountInfo.vue';
 
 </script>
 
@@ -18,7 +20,9 @@ import Login from './components/Login.vue';
   <HelloWorld msg="Vite + Vue" />
   <PlaidLink />
   <RegisterForm/>
+  <AccountInfo/>
   <Login/>
+  <Logout/>
 </template>
 
 <style scoped>
