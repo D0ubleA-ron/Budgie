@@ -7,7 +7,6 @@
 
 <script setup>
 import { ref } from 'vue'
-
 const loading = ref(false)
 
 const logout = async () => {
@@ -23,11 +22,7 @@ const logout = async () => {
       throw new Error(data.error || 'Logout failed')
     }
 
-    // Optional: clear any local UI state (accounts, user info, etc.)
-    // e.g., emit an event or update a store
-
-    // Redirect to login or home
-    window.location.href = '/login'
+    
   } catch (e) {
     console.error(e)
     alert(e.message)

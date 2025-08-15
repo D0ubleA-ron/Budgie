@@ -63,6 +63,18 @@ const logout = (req, res) => {
   res.json({ message: 'Logged out successfully' });
 };
 
-module.exports = { register, login, logout };
+const checkLoginStatus = (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.json({ loggedIn: false });
+  }
 
-module.exports = { register, login, logout };
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.json({ loggedIn: true, user: decoded });
+  } catch (err) {
+    res.json({ loggedIn: false });
+  }
+};
+
+module.exports = { register, login, logout, checkLoginStatus };

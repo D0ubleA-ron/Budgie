@@ -6,6 +6,7 @@ import RegisterForm from '../components/RegisterForm.vue'
 import PlaidLink from '../components/PlaidLink.vue'
 import AccountInfo from '../components/AccountInfo.vue'
 import Logout from '../components/Logout.vue'
+import Transactions from '../components/Transactions.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -14,6 +15,7 @@ const routes = [
   { path: '/plaid', name: 'PlaidLink', component: PlaidLink },
   { path: '/account', name: 'AccountInfo', component: AccountInfo },
   { path: '/logout', name: 'Logout', component: Logout },
+  { path: '/transactions', name: 'Transactions', component: Transactions },
 ]
 
 const router = createRouter({
