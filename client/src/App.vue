@@ -18,22 +18,16 @@ async function checkAuth() {
 }
 
 async function checkBankLinked() {
-  // Only check if logged in
   if (!isLoggedIn.value) {
     hasBank.value = false
     return
   }
   try {
     const res = await fetch('http://localhost:3000/api/plaid/accounts', { credentials: 'include' })
-    if (res.ok) {
-      // Access token exists; we consider "linked" true regardless of account count
-      hasBank.value = true
-      return
-    }
+    if (res.ok) { hasBank.value = true; return }
     const data = await res.json().catch(() => ({}))
     hasBank.value = !(data?.error === 'No access token linked to user')
   } catch {
-    // If the check fails, default to not linked so we don't expose links that will error
     hasBank.value = false
   }
 }
@@ -56,7 +50,7 @@ function linkClass(to) {
   return linkBase(active)
 }
 
-// The only links shown, based on state
+// Only show the links the user needs
 const visibleLinks = computed(() => {
   if (!isLoggedIn.value) {
     return [
@@ -78,14 +72,6 @@ const visibleLinks = computed(() => {
     { to: '/transactions', label: 'Transactions' },
     { to: '/logout', label: 'Logout' },
   ]
-})
-
-// CTA button based on state
-const cta = computed(() => {
-  if (!isLoggedIn.value) return null
-  return hasBank.value
-    ? { to: '/transactions', label: 'View Transactions' }
-    : { to: '/plaid', label: 'Link Bank' }
 })
 </script>
 
@@ -110,15 +96,6 @@ const cta = computed(() => {
                 :class="linkClass(link.to)"
               >
                 {{ link.label }}
-              </RouterLink>
-
-              <!-- Contextual CTA -->
-              <RouterLink
-                v-if="cta"
-                :to="cta.to"
-                class="ml-2 inline-flex items-center gap-2 rounded-xl bg-gray-900 text-white font-semibold px-4 py-2 hover:bg-gray-800 transition"
-              >
-                {{ cta.label }}
               </RouterLink>
             </div>
 
@@ -150,15 +127,6 @@ const cta = computed(() => {
               @click="menuOpen = false"
             >
               {{ link.label }}
-            </RouterLink>
-
-            <RouterLink
-              v-if="cta"
-              :to="cta.to"
-              class="mt-1 inline-flex items-center justify-center rounded-xl bg-gray-900 text-white font-semibold px-4 py-2 hover:bg-gray-800 transition"
-              @click="menuOpen = false"
-            >
-              {{ cta.label }}
             </RouterLink>
           </div>
         </div>
