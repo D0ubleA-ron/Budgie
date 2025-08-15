@@ -1,31 +1,51 @@
 <template>
-  <button @click="logout" :disabled="loading">
-    <span v-if="loading">Logging out...</span>
-    <span v-else>Logout</span>
+  <button
+    @click="logout"
+    :disabled="loading"
+    class="inline-flex items-center gap-2 rounded-xl bg-gray-900 text-white font-semibold px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition"
+  >
+    <svg v-if="loading" class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+    </svg>
+    <span>{{ loading ? 'Logging out…' : 'Logout' }}</span>
   </button>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
 const loading = ref(false)
+const router = useRouter()
 
 const logout = async () => {
   loading.value = true
   try {
     const res = await fetch('http://localhost:3000/api/auth/logout', {
       method: 'POST',
-      credentials: 'include', // send cookie
+      credentials: 'include',
     })
 
+    // Try to read JSON if present; tolerate 204/empty responses
+    let message = 'Logout failed'
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      throw new Error(data.error || 'Logout failed')
+      try {
+        const data = await res.json()
+        message = data?.error || data?.message || message
+      } catch {}
+      throw new Error(message)
     }
 
-    
+    // Redirect to login (use route name if you prefer)
+    await router.replace('/login')
+
+    // Optional: force a full refresh to immediately update navbar auth state
+    // location.reload()
+
   } catch (e) {
     console.error(e)
-    alert(e.message)
+    alert(e.message || 'Logout failed')
   } finally {
     loading.value = false
   }
@@ -33,5 +53,5 @@ const logout = async () => {
 </script>
 
 <style scoped>
-button { padding: 8px 12px; }
+/* Tailwind handles styling */
 </style>

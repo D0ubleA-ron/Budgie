@@ -3,34 +3,45 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const isLoggedIn = ref(false)
+const hasBank = ref(false)
 const menuOpen = ref(false)
 const route = useRoute()
 
-onMounted(async () => {
+async function checkAuth() {
   try {
-    const res = await fetch('http://localhost:3000/api/auth/is-logged-in', {
-      credentials: 'include',
-    })
-    const data = await res.json()
+    const res = await fetch('http://localhost:3000/api/auth/is-logged-in', { credentials: 'include' })
+    const data = await res.json().catch(() => ({}))
     isLoggedIn.value = !!data?.loggedIn
   } catch {
     isLoggedIn.value = false
   }
+}
+
+async function checkBankLinked() {
+  // Only check if logged in
+  if (!isLoggedIn.value) {
+    hasBank.value = false
+    return
+  }
+  try {
+    const res = await fetch('http://localhost:3000/api/plaid/accounts', { credentials: 'include' })
+    if (res.ok) {
+      // Access token exists; we consider "linked" true regardless of account count
+      hasBank.value = true
+      return
+    }
+    const data = await res.json().catch(() => ({}))
+    hasBank.value = !(data?.error === 'No access token linked to user')
+  } catch {
+    // If the check fails, default to not linked so we don't expose links that will error
+    hasBank.value = false
+  }
+}
+
+onMounted(async () => {
+  await checkAuth()
+  await checkBankLinked()
 })
-
-const guestLinks = computed(() => ([
-  { to: '/', label: 'Home' },
-  { to: '/login', label: 'Login' },
-  { to: '/register', label: 'Register' },
-]))
-
-const authedLinks = computed(() => ([
-  { to: '/', label: 'Home' },
-  { to: '/plaid', label: 'Link Bank' },
-  { to: '/account', label: 'Accounts' },
-  { to: '/transactions', label: 'Transactions' },
-  { to: '/logout', label: 'Logout' },
-]))
 
 function linkBase(active) {
   return [
@@ -44,6 +55,38 @@ function linkClass(to) {
   const active = route.path === to
   return linkBase(active)
 }
+
+// The only links shown, based on state
+const visibleLinks = computed(() => {
+  if (!isLoggedIn.value) {
+    return [
+      { to: '/', label: 'Home' },
+      { to: '/login', label: 'Login' },
+      { to: '/register', label: 'Register' },
+    ]
+  }
+  if (!hasBank.value) {
+    return [
+      { to: '/', label: 'Home' },
+      { to: '/plaid', label: 'Link Bank' },
+      { to: '/logout', label: 'Logout' },
+    ]
+  }
+  return [
+    { to: '/', label: 'Home' },
+    { to: '/account', label: 'Accounts' },
+    { to: '/transactions', label: 'Transactions' },
+    { to: '/logout', label: 'Logout' },
+  ]
+})
+
+// CTA button based on state
+const cta = computed(() => {
+  if (!isLoggedIn.value) return null
+  return hasBank.value
+    ? { to: '/transactions', label: 'View Transactions' }
+    : { to: '/plaid', label: 'Link Bank' }
+})
 </script>
 
 <template>
@@ -61,7 +104,7 @@ function linkClass(to) {
             <!-- Desktop links -->
             <div class="hidden md:flex items-center gap-1">
               <RouterLink
-                v-for="link in (isLoggedIn ? authedLinks : guestLinks)"
+                v-for="link in visibleLinks"
                 :key="link.to"
                 :to="link.to"
                 :class="linkClass(link.to)"
@@ -69,13 +112,13 @@ function linkClass(to) {
                 {{ link.label }}
               </RouterLink>
 
-              <!-- Highlighted CTA when logged in -->
+              <!-- Contextual CTA -->
               <RouterLink
-                v-if="isLoggedIn"
-                to="/transactions"
+                v-if="cta"
+                :to="cta.to"
                 class="ml-2 inline-flex items-center gap-2 rounded-xl bg-gray-900 text-white font-semibold px-4 py-2 hover:bg-gray-800 transition"
               >
-                View Transactions
+                {{ cta.label }}
               </RouterLink>
             </div>
 
@@ -100,7 +143,7 @@ function linkClass(to) {
         <div v-show="menuOpen" class="md:hidden border-t border-gray-200">
           <div class="px-4 py-3 flex flex-col gap-1 bg-white">
             <RouterLink
-              v-for="link in (isLoggedIn ? authedLinks : guestLinks)"
+              v-for="link in visibleLinks"
               :key="link.to"
               :to="link.to"
               :class="linkClass(link.to)"
@@ -110,12 +153,12 @@ function linkClass(to) {
             </RouterLink>
 
             <RouterLink
-              v-if="isLoggedIn"
-              to="/transactions"
+              v-if="cta"
+              :to="cta.to"
               class="mt-1 inline-flex items-center justify-center rounded-xl bg-gray-900 text-white font-semibold px-4 py-2 hover:bg-gray-800 transition"
               @click="menuOpen = false"
             >
-              View Transactions
+              {{ cta.label }}
             </RouterLink>
           </div>
         </div>

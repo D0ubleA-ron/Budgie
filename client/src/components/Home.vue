@@ -15,33 +15,37 @@
 
       <!-- Quick actions -->
       <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <RouterLink
-          to="/register"
-          class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-teal-600 text-white font-semibold shadow-sm hover:bg-teal-700 transition"
-        >
-          <span>Get started</span> <span aria-hidden>→</span>
-        </RouterLink>
+        <!-- Guest actions -->
+        <template v-if="!isLoggedIn">
+          <RouterLink
+            to="/register"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-teal-600 text-white font-semibold shadow-sm hover:bg-teal-700 transition"
+          >
+            <span>Get started</span> <span aria-hidden>→</span>
+          </RouterLink>
+          <RouterLink
+            to="/login"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-gray-900 font-semibold shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition"
+          >
+            Log in
+          </RouterLink>
+        </template>
 
-        <RouterLink
-          to="/login"
-          class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-gray-900 font-semibold shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition"
-        >
-          Log in
-        </RouterLink>
-
-        <RouterLink
-          to="/plaid"
-          class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-gray-900 font-semibold shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition"
-        >
-          Link a bank
-        </RouterLink>
-
-        <RouterLink
-          to="/transactions"
-          class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-gray-900 font-semibold shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition"
-        >
-          View transactions
-        </RouterLink>
+        <!-- Logged-in actions -->
+        <template v-else>
+          <RouterLink
+            to="/plaid"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-gray-900 font-semibold shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition"
+          >
+            Link a bank
+          </RouterLink>
+          <RouterLink
+            to="/transactions"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-gray-900 font-semibold shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition"
+          >
+            View transactions
+          </RouterLink>
+        </template>
       </div>
     </section>
 
@@ -59,11 +63,21 @@
                 Connect your bank once, then explore clean, searchable transactions and simple account insights.
               </p>
             </div>
+
+            <!-- Contextual CTA -->
             <RouterLink
+              v-if="isLoggedIn"
               to="/account"
               class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white font-semibold shadow-sm hover:bg-gray-800 transition"
             >
               Account info <span aria-hidden>↗</span>
+            </RouterLink>
+            <RouterLink
+              v-else
+              to="/register"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-600 text-white font-semibold shadow-sm hover:bg-teal-700 transition"
+            >
+              Get started <span aria-hidden>→</span>
             </RouterLink>
           </div>
         </div>
@@ -102,7 +116,21 @@
 </template>
 
 <script setup>
-// No logic needed for now
+import { ref, onMounted } from 'vue'
+
+const isLoggedIn = ref(false)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('http://localhost:3000/api/auth/is-logged-in', {
+      credentials: 'include',
+    })
+    const data = await res.json()
+    isLoggedIn.value = !!data?.loggedIn
+  } catch {
+    isLoggedIn.value = false
+  }
+})
 </script>
 
 <style scoped>
