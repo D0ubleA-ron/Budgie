@@ -6,10 +6,12 @@ const isLoggedIn = ref(false)
 const hasBank = ref(false)
 const menuOpen = ref(false)
 const route = useRoute()
+const API = import.meta.env.VITE_API_BASE_URL
+
 
 async function checkAuth() {
   try {
-    const res = await fetch('http://localhost:3000/api/auth/is-logged-in', { credentials: 'include' })
+    const res = await fetch(`${API}/api/auth/is-logged-in`, { credentials: 'include' })
     const data = await res.json().catch(() => ({}))
     isLoggedIn.value = !!data?.loggedIn
   } catch {
@@ -23,7 +25,7 @@ async function checkBankLinked() {
     return
   }
   try {
-    const res = await fetch('http://localhost:3000/api/plaid/accounts', { credentials: 'include' })
+    const res = await fetch(`${API}/api/plaid/accounts`, { credentials: 'include' })
     if (res.ok) { hasBank.value = true; return }
     const data = await res.json().catch(() => ({}))
     hasBank.value = !(data?.error === 'No access token linked to user')

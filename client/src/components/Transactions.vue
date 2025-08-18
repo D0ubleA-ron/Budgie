@@ -125,6 +125,9 @@ const end = ref('')
 
 const sort = ref({ key: 'date', dir: 'desc' })
 
+const API = import.meta.env.VITE_API_BASE_URL
+
+
 function formatAmount(amount, currency) {
   try {
     return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(amount)
@@ -141,7 +144,7 @@ async function fetchTransactions() {
     const qs = new URLSearchParams()
     if (start.value) qs.set('start', start.value)
     if (end.value)   qs.set('end', end.value)
-    const url = `http://localhost:3000/api/plaid/transactions${qs.toString() ? `?${qs}` : ''}`
+    const url = `${API}/api/plaid/transactions${qs.toString() ? `?${qs}` : ''}`
 
     const res = await fetch(url, {
       method: 'GET',

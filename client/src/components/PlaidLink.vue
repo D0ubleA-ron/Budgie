@@ -60,7 +60,9 @@
 </template>
 
 <script>
+const API = import.meta.env.VITE_API_BASE_URL
 export default {
+  
   data() {
     return {
       linkToken: null,
@@ -84,7 +86,7 @@ export default {
   methods: {
     async tryLoadAccounts() {
       try {
-        const res = await fetch('http://localhost:3000/api/plaid/accounts', {
+        const res = await fetch(`${API}/api/plaid/accounts`, {
           credentials: 'include'
         })
         const data = await res.json().catch(() => null)
@@ -116,7 +118,7 @@ export default {
       await this.loadPlaidScript()
 
       // Create link token
-      const resp = await fetch('http://localhost:3000/api/plaid/create-link-token', {
+      const resp = await fetch(`${API}/api/plaid/create-link-token`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
@@ -130,7 +132,7 @@ export default {
         token: this.linkToken,
         onSuccess: async (public_token) => {
           try {
-            const exchangeRes = await fetch('http://localhost:3000/api/plaid/exchange-public-token', {
+            const exchangeRes = await fetch(`${API}/api/plaid/exchange-public-token`, {
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },

@@ -139,6 +139,7 @@ const showConfirm = ref(false)
 const errorMessage = ref('')
 const success = ref(false)
 const loading = ref(false)
+const API = import.meta.env.VITE_API_BASE_URL
 
 const passwordsMatch = computed(() => password.value && confirm.value && password.value === confirm.value)
 const canSubmit = computed(() =>
@@ -155,7 +156,7 @@ async function register() {
 
   loading.value = true
   try {
-    const res = await fetch('http://localhost:3000/api/auth/register', {
+    const res = await fetch(`${API}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // If your server sets a cookie on register, you can include credentials:

@@ -108,13 +108,16 @@ const remember = ref(false)
 const showPassword = ref(false)
 const error = ref('')
 const loading = ref(false)
+const API = import.meta.env.VITE_API_BASE_URL
+
 
 const handleLogin = async () => {
   if (!email.value || !password.value) return
   loading.value = true
   error.value = ''
   try {
-    const res = await fetch('http://localhost:3000/api/auth/login', {
+    console.log(API)
+    const res = await fetch(`${API}/api/auth/login`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },

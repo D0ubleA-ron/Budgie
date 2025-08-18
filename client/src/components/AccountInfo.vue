@@ -119,6 +119,8 @@ import { ref, onMounted } from 'vue'
 const accounts = ref([])
 const error = ref('')
 const loading = ref(false)
+const API = import.meta.env.VITE_API_BASE_URL
+
 
 function fmtMoney(amount, currency) {
   if (amount == null) return '—'
@@ -134,7 +136,7 @@ async function fetchAccounts() {
   error.value = ''
   loading.value = true
   try {
-    const res = await fetch('http://localhost:3000/api/plaid/accounts', {
+    const res = await fetch(`${API}/api/plaid/accounts`, {
       method: 'GET',
       credentials: 'include'
     })

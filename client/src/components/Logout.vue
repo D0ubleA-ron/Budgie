@@ -18,11 +18,12 @@ import { useRouter } from 'vue-router'
 
 const loading = ref(false)
 const router = useRouter()
+const API = import.meta.env.VITE_API_BASE_URL
 
 const logout = async () => {
   loading.value = true
   try {
-    const res = await fetch('http://localhost:3000/api/auth/logout', {
+    const res = await fetch(`${API}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include',
     })

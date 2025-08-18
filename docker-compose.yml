@@ -1,8 +1,9 @@
-version: '3.9'
+version: "3.9"
 
 services:
   db:
     image: postgres:15
+    platform: linux/arm64
     container_name: postgres
     restart: always
     environment:
@@ -15,22 +16,38 @@ services:
       - db-data:/var/lib/postgresql/data
 
   backend:
-    build: ./server
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    platform: linux/arm64
     container_name: backend
     env_file:
-    - ./server/.env
+      - ./server/.env
     depends_on:
       - db
     ports:
       - "3000:3000"
       - "5555:5555"
+    volumes:
+      - ./server:/app            # your code
+      - /app/node_modules        # container-managed node_modules (prevents host override)
 
   frontend:
-    build: ./client
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    platform: linux/arm64
     container_name: frontend
     depends_on:
       - backend
     ports:
-      - "5173:80"  
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+
 volumes:
   db-data:

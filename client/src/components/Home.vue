@@ -123,10 +123,12 @@ import { ref, onMounted } from 'vue'
 const isLoggedIn = ref(false)
 const hasBank = ref(false)
 const ctaReady = ref(false) // <-- gate rendering of CTAs
+const API = import.meta.env.VITE_API_BASE_URL
+
 
 onMounted(async () => {
   try {
-    const res = await fetch('http://localhost:3000/api/auth/is-logged-in', { credentials: 'include' })
+    const res = await fetch(`${API}/api/auth/is-logged-in`, { credentials: 'include' })
     const data = await res.json()
     isLoggedIn.value = !!data?.loggedIn
   } catch {
@@ -135,7 +137,7 @@ onMounted(async () => {
 
   if (isLoggedIn.value) {
     try {
-      const res = await fetch('http://localhost:3000/api/plaid/accounts', { credentials: 'include' })
+      const res = await fetch(`${API}/api/plaid/accounts`, { credentials: 'include' })
       hasBank.value = res.ok
       if (!res.ok) {
         const d = await res.json().catch(() => ({}))

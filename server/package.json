@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "dev": "prisma generate && nodemon index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
   },
   "keywords": [],
   "author": "",
@@ -12,15 +13,16 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.13.0",
+    "bcrypt": "^5.1.0",
+    "cookie-parser": "^1.x.x",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "plaid": "^15.0.0",
-    "bcrypt": "^5.1.0",
     "jsonwebtoken": "^9.x.x",
-    "cookie-parser": "^1.x.x"
+    "plaid": "^15.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "prisma": "^6.14.0"
   }
 }
