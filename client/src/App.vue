@@ -1,50 +1,19 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuth } from '@/stores/auth'
 
-const isLoggedIn = ref(false)
-const hasBank = ref(false)
-const menuOpen = ref(false)
 const route = useRoute()
-const API = import.meta.env.VITE_API_BASE_URL
+const auth = useAuth()
 
-
-async function checkAuth() {
-  try {
-    const res = await fetch(`${API}/api/auth/is-logged-in`, { credentials: 'include' })
-    const data = await res.json().catch(() => ({}))
-    isLoggedIn.value = !!data?.loggedIn
-  } catch {
-    isLoggedIn.value = false
-  }
-}
-
-async function checkBankLinked() {
-  if (!isLoggedIn.value) {
-    hasBank.value = false
-    return
-  }
-  try {
-    const res = await fetch(`${API}/api/plaid/accounts`, { credentials: 'include' })
-    if (res.ok) { hasBank.value = true; return }
-    const data = await res.json().catch(() => ({}))
-    hasBank.value = !(data?.error === 'No access token linked to user')
-  } catch {
-    hasBank.value = false
-  }
-}
-
-onMounted(async () => {
-  await checkAuth()
-  await checkBankLinked()
-})
+onMounted(() => { auth.refresh() })
+// Re-check on every navigation so the links update immediately
+watch(() => route.fullPath, () => { auth.refresh() })
 
 function linkBase(active) {
   return [
     'px-3 py-2 rounded-lg text-sm font-medium transition',
-    active
-      ? 'text-gray-900 bg-gray-100'
-      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+    active ? 'text-gray-900 bg-gray-100' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
   ].join(' ')
 }
 function linkClass(to) {
@@ -52,16 +21,15 @@ function linkClass(to) {
   return linkBase(active)
 }
 
-// Only show the links the user needs
 const visibleLinks = computed(() => {
-  if (!isLoggedIn.value) {
+  if (!auth.loggedIn) {
     return [
       { to: '/', label: 'Home' },
       { to: '/login', label: 'Login' },
       { to: '/register', label: 'Register' },
     ]
   }
-  if (!hasBank.value) {
+  if (!auth.hasBank) {
     return [
       { to: '/', label: 'Home' },
       { to: '/plaid', label: 'Link Bank' },

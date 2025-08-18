@@ -99,8 +99,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '@/stores/auth'  
 
 const router = useRouter()
+const auth = useAuth()                    
 
 const email = ref('')
 const password = ref('')
@@ -110,13 +112,11 @@ const error = ref('')
 const loading = ref(false)
 const API = import.meta.env.VITE_API_BASE_URL
 
-
 const handleLogin = async () => {
   if (!email.value || !password.value) return
   loading.value = true
   error.value = ''
   try {
-    console.log(API)
     const res = await fetch(`${API}/api/auth/login`, {
       method: 'POST',
       credentials: 'include',
@@ -129,11 +129,9 @@ const handleLogin = async () => {
     })
     const data = await res.json().catch(() => null)
     if (!res.ok) throw new Error(data?.error || data?.message || 'Login failed')
+    await auth.refresh()                  
 
-    // success
-    error.value = ''
-    // Redirect to transactions (adjust as needed)
-    router.push('/transactions')
+    router.replace('/transactions')
   } catch (e) {
     error.value = e?.message || 'Login failed'
   } finally {
