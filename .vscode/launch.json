@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-BffApplication<bff>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.budgie.bff.BffApplication",
+            "projectName": "bff",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
