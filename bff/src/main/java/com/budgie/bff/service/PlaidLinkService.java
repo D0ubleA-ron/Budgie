@@ -35,8 +35,6 @@ public class PlaidLinkService {
             throw new RuntimeException("Failed to create link token");
         }
 
-        System.out.println(response);
-
         return response.getLinkToken();
     }
 
