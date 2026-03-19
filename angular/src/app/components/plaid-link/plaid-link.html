@@ -1,10 +1,11 @@
-<mr-ngx-plaid-link-button
-  env="sandbox"
-  token="YOURPUBLICKEY"
-  [countryCodes]="['US', 'CA', 'GB']"
-  (Success)="onPlaidSuccess($event)"
-  (Exit)="onPlaidExit($event)"
-  className="launch-plaid-link-button"
-  buttonText="Link Your Bank Account">
-
-</mr-ngx-plaid-link-button>
+@if (plaidLinkToken()) {
+  <mr-ngx-plaid-link-button
+    env="sandbox"
+    [token]="plaidLinkToken()"
+    [countryCodes]="['US', 'CA', 'GB']"
+    (Success)="onPlaidSuccess($event)"
+    (Exit)="onPlaidExit($event)"
+    className="launch-plaid-link-button"
+    buttonText="Link Your Bank Account">
+  </mr-ngx-plaid-link-button>
+}

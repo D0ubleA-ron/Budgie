@@ -16,7 +16,7 @@ public class PlaidLinkService {
         this.plaidApi = plaidApi;
     }
 
-    public String createLinkToken(String userId) throws IOException {
+    public LinkTokenCreateResponse createLinkToken(String userId) throws IOException {
         LinkTokenCreateRequestUser user = new LinkTokenCreateRequestUser().clientUserId(userId);
 
         LinkTokenCreateRequest request = new LinkTokenCreateRequest()
@@ -35,7 +35,23 @@ public class PlaidLinkService {
             throw new RuntimeException("Failed to create link token");
         }
 
-        return response.getLinkToken();
+        return response;
+    }
+
+    public ItemPublicTokenExchangeResponse exchangeLinkToken(String linkToken) throws IOException {
+        ItemPublicTokenExchangeRequest request = new ItemPublicTokenExchangeRequest()
+                .publicToken(linkToken);
+
+        ItemPublicTokenExchangeResponse response = plaidApi
+                .itemPublicTokenExchange(request)
+                .execute()
+                .body();
+
+        if (response == null || response.getAccessToken() == null) {
+            throw new RuntimeException("Failed to exchange link token");
+        }
+
+        return response;
     }
 
 
